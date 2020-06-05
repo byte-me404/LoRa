@@ -1,9 +1,18 @@
 #include <Arduino.h>
 
+
+
 void setup() {
-  // put your setup code here, to run once:
+  //pinMode(25, INPUT_PULLUP);
+  Serial.begin(115200);
+  //analogSetAttenuation(ADC_6db);
 }
 
+float potValue = 0;
+
 void loop() {
-  // put your main code here, to run repeatedly:
+  //Serial.println(digitalRead(25));
+  delay(100);
+  potValue = analogRead(14);
+  Serial.println(potValue);
 }
