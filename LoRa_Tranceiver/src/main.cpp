@@ -5,10 +5,10 @@
 #include <SPI.h>
 #include <LoRa.h>
 
-//Libraries for OLED Display
+//Libraries for BME280
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 
 //define the pins used by the LoRa transceiver module
 #define SCK 5
@@ -21,44 +21,31 @@
 //866E6 for Europe
 #define BAND 866E6
 
-//OLED pins
-#define OLED_SDA 21
-#define OLED_SCL 22 
-#define OLED_RST 16
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
-//packet counter
-int counter = 0;
+#define SEALEVELPRESSURE_HPA (929.35)
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
+float temperatur = 0;
+float druck = 0;
+float hoehe = 0;
+float feuchte = 0;
+
+Adafruit_BME280 bme;
 
 void setup() {
 
-  //reset OLED display via software
-  pinMode(OLED_RST, OUTPUT);
-  digitalWrite(OLED_RST, LOW);
-  delay(20);
-  digitalWrite(OLED_RST, HIGH);
+  bool status;
 
-  //initialize OLED
-  Wire.begin(OLED_SDA, OLED_SCL);
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false)) { // Address 0x3C for 128x32
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+  //Initialize Serial Monitor
+  Serial.begin(115200);
+
+  //Initialize BME280 
+  status = bme.begin(0x76);  
+  if (!status) {
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    while (1);
   }
   
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(0,0);
-  display.print("LORA SENDER ");
-  display.display();
-  
-  //initialize Serial Monitor
-  Serial.begin(115200);
-  
-  Serial.println("LoRa Sender Test");
+  Serial.println("LoRa Sender");
 
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
@@ -70,36 +57,46 @@ void setup() {
     while (1);
   }
   Serial.println("LoRa Initializing OK!");
-  display.setCursor(0,10);
-  display.print("LoRa Initializing OK!");
-  display.display();
   delay(2000);
 }
 
 void loop() {
    
-  Serial.print("Sending packet: ");
-  Serial.println(counter);
+  Serial.print("Sending packet ");
+
+
+  Serial.print("Temperature = ");
+  temperatur = bme.readTemperature();
+  Serial.print(temperatur);
+  Serial.println(" *C");
+
+  Serial.print("Pressure = ");
+  druck = bme.readPressure() / 100.0F;
+  Serial.print(druck);
+  Serial.println(" hPa");
+
+  Serial.print("Approx. Altitude = ");
+  hoehe = bme.readAltitude(SEALEVELPRESSURE_HPA)+665;
+  Serial.print(hoehe);
+  Serial.println(" m");
+
+  Serial.print("Humidity = ");
+  feuchte = bme.readHumidity();
+  Serial.print(feuchte);
+  Serial.println(" %");
+
+
 
   //Send LoRa packet to receiver
   LoRa.beginPacket();
-  LoRa.print("Hallo ");
-  LoRa.print(counter);
+  LoRa.print(temperatur);
+  LoRa.print("%");
+  LoRa.print(druck);
+  LoRa.print("%");
+  LoRa.print(hoehe);
+  LoRa.print("%");
+  LoRa.print(feuchte);
   LoRa.endPacket();
-  
-  display.clearDisplay();
-  display.setCursor(0,0);
-  display.println("LORA SENDER");
-  display.setCursor(0,20);
-  display.setTextSize(1);
-  display.print("LoRa packet sent.");
-  display.setCursor(0,30);
-  display.print("Counter:");
-  display.setCursor(50,30);
-  display.print(counter);      
-  display.display();
-
-  counter++;
   
   delay(2000);
 }

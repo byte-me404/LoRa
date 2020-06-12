@@ -32,6 +32,13 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 String LoRaData;
 
+String temperatur;
+String druck;
+String hoehe;
+String feuchte;
+
+uint8_t i = 0;
+
 void setup() { 
   
   //reset OLED display via software
@@ -82,10 +89,20 @@ void loop() {
     //received a packet
     Serial.print("Received packet ");
 
+    i = 0;
+
     //read packet
     while (LoRa.available()) {
-      LoRaData = LoRa.readString();
+      LoRaData = LoRa.readStringUntil('%');
       Serial.print(LoRaData);
+
+      switch(i){
+        case 0: temperatur = LoRaData; break;
+        case 1: druck = LoRaData; break;
+        case 2: hoehe = LoRaData; break;
+        case 3: feuchte = LoRaData; break;
+      }
+      i++;
     }
 
     //print RSSI of packet
@@ -93,18 +110,36 @@ void loop() {
     Serial.print(" with RSSI ");    
     Serial.println(rssi);
 
-   // Dsiplay information
-   display.clearDisplay();
-   display.setCursor(0,0);
-   display.print("LORA RECEIVER");
-   display.setCursor(0,20);
-   display.print("Received packet:");
-   display.setCursor(0,30);
-   display.print(LoRaData);
-   display.setCursor(0,40);
-   display.print("RSSI:");
-   display.setCursor(30,40);
-   display.print(rssi);
-   display.display();   
+    // Dsiplay information
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.print("LORA RECEIVER");
+
+    display.setCursor(0,15);
+    display.print("Temperatur:");
+    display.setCursor(70,15);
+    display.print(temperatur);
+
+    display.setCursor(0,25);
+    display.print("Luftfeuche:");
+    display.setCursor(70,25);
+    display.print(feuchte);
+
+    display.setCursor(0,35);
+    display.print("Druck:");
+    display.setCursor(70,35);
+    display.print(druck);
+
+    display.setCursor(0,45);
+    display.print("Hoehe:");
+    display.setCursor(70,45);
+    display.print(hoehe);
+
+    display.setCursor(0,55);
+    display.print("RSSI:");
+    display.setCursor(70,55);
+    display.print(rssi);
+
+    display.display();   
   }
 }
