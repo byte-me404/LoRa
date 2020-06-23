@@ -1,3 +1,4 @@
+  
 #include <Arduino.h>
 
 
@@ -34,8 +35,13 @@ String LoRaData;
 
 String temperatur;
 String druck;
-String hoehe;
+String akku;
 String feuchte;
+String windgeschwindigkeit;
+String windrichtung;
+
+float hoehe_1 = 0;
+float max_hoehe = 0;
 
 uint8_t i = 0;
 
@@ -79,15 +85,23 @@ void setup() {
   display.setCursor(0,10);
   display.println("LoRa Initializing OK!");
   display.display();  
+
+  delay(500);
+  pinMode(25,OUTPUT);
+  digitalWrite(25,LOW);
 }
+
 
 void loop() {
 
   //try to parse packet
   int packetSize = LoRa.parsePacket();
+  digitalWrite(25,LOW);
+
   if (packetSize) {
     //received a packet
     Serial.print("Received packet ");
+    digitalWrite(25,HIGH);
 
     i = 0;
 
@@ -99,47 +113,54 @@ void loop() {
       switch(i){
         case 0: temperatur = LoRaData; break;
         case 1: druck = LoRaData; break;
-        case 2: hoehe = LoRaData; break;
-        case 3: feuchte = LoRaData; break;
+        case 2: feuchte = LoRaData; break;
+        case 3: akku = LoRaData; break;
+        case 4: windrichtung = LoRaData; break;
+        case 5: windgeschwindigkeit = LoRaData; break;
       }
       i++;
     }
+
+
 
     //print RSSI of packet
     int rssi = LoRa.packetRssi();
     Serial.print(" with RSSI ");    
     Serial.println(rssi);
 
-    // Dsiplay information
     display.clearDisplay();
-    display.setCursor(0,0);
-    display.print("LORA RECEIVER");
 
-    display.setCursor(0,15);
-    display.print("Temperatur:");
-    display.setCursor(70,15);
+    display.setCursor(0,5);
+    display.print("Temperatur");
+    display.setCursor(70,5);
     display.print(temperatur);
 
-    display.setCursor(0,25);
+    display.setCursor(0,15);
     display.print("Luftfeuche:");
-    display.setCursor(70,25);
+    display.setCursor(70,15);
     display.print(feuchte);
 
-    display.setCursor(0,35);
+    display.setCursor(0,25);
     display.print("Druck:");
-    display.setCursor(70,35);
+    display.setCursor(70,25);
     display.print(druck);
 
+    display.setCursor(0,35);
+    display.print("Bat. Span.:");
+    display.setCursor(70,35);
+    display.print(akku);
+
     display.setCursor(0,45);
-    display.print("Hoehe:");
+    display.print("Windricht.:");
     display.setCursor(70,45);
-    display.print(hoehe);
+    display.print(windrichtung);
 
     display.setCursor(0,55);
-    display.print("RSSI:");
+    display.print("Windgesch.:");
     display.setCursor(70,55);
-    display.print(rssi);
+    display.print(windgeschwindigkeit);
 
-    display.display();   
+    display.display();
+    delay(500);   
   }
 }
