@@ -54,7 +54,7 @@ float feuchte_temp;
 float windgeschwindigkeit;
 float windrichtung;
 bool temp = false;
-long counter = 0;
+
 
 
 
@@ -215,7 +215,6 @@ void client_publish(){
   char akkuString[8];
   char speedString[8];
   char dirString[8];
-  char countString[8];
 
   // Daten in Strings konvertieren
   dtostrf(temperatur, 1, 2, tempString);
@@ -224,7 +223,6 @@ void client_publish(){
   dtostrf(akku, 1, 2, akkuString);
   dtostrf(windgeschwindigkeit, 1, 2, speedString);
   dtostrf(windrichtung, 1, 2, dirString);
-  dtostrf(counter, 1, 2, countString);
 
   // Senden
   client.publish(temperatur_topic, tempString);
@@ -233,9 +231,6 @@ void client_publish(){
   client.publish(akku_topic, akkuString);
   client.publish(windspeed_topic, speedString);
   client.publish(winddirection_topic, dirString);
-  client.publish(counter_topic, countString);
-
-
 }
 
 // Funktion um die Wetter-Daten am OLED anzuzeigen
