@@ -91,9 +91,9 @@ void setup() {
   digitalWrite(GND, LOW);
 
   // Daten versenden
-  LoRa_send();
   delay(500);
   LoRa_send();
+  delay(500);
 
   // LoRa Modul stoppen
   LoRa.end();
