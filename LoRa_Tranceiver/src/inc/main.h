@@ -14,17 +14,18 @@
 #define BIT1 12
 #define BIT2 13
 #define BIT3 15
-#define BIT4 0
+#define BIT4 34
 #define GND 2
 
 // Defines für Windgeschwindigkeitssensor
 #define IO_Wind 4
 #define Vcc_Wind 25
 
+// Defines für Deep-Sleep
 #define uS_TO_S_FACTOR 1000000  
 #define TIME_TO_SLEEP  60
 
-
+// Prototypen
 void winddirection(void);
 void IRAM_ATTR ISR_WIND(void);
 void windspeed(void);

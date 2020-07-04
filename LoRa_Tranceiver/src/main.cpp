@@ -33,8 +33,11 @@ Adafruit_BME280 bme;
 
 
 
+
+
 void setup() {
 
+  // Deep-Sleep Modus definieren
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
   esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
@@ -70,26 +73,33 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(IO_Wind), ISR_WIND, RISING);
   timer = timerBegin(0, 80, true);
 
-
+  // Temp., Akku, usw. messen
   BME280();
 
   detachInterrupt(digitalPinToInterrupt(IO_Wind));
   timerEnd(timer);
   digitalWrite(Vcc_Wind, LOW);
 
+  // Windgeschw. bestimmen
   windspeed();
 
   digitalWrite(GND, HIGH);
   delay(500);
+  // Windrichtung bestimmen
   winddirection();
+  delay(100);
   digitalWrite(GND, LOW);
 
+  // Daten versenden
+  LoRa_send();
+  delay(500);
   LoRa_send();
 
-
+  // LoRa Modul stoppen
   LoRa.end();
   SPI.end();
 
+  // Deep-Sleep
   esp_deep_sleep_start();
 }
 
@@ -102,13 +112,15 @@ void winddirection(){
 
   uint8_t bit = 0;
   uint8_t bit_0, bit_1, bit_2, bit_3, bit_4;
-  uint16_t loockup_array[31] = {0, 0, 144, 12, 72, 60, 132, 24, 288, 348, 156, 336, 300, 312, 120, 324, 216, 228, 204, 192, 84, 48, 96, 36, 276, 240, 168, 180, 264, 252, 108};
+  uint16_t loockup_array[31] = {0, 72, 216, 84, 144, 132, 204, 96, 0, 60, 228, 48, 12, 24, 192, 36, 288, 300, 276, 264, 156, 120, 168, 108, 348, 312, 240, 252, 336, 324, 180};
+
 
   bit_0 = digitalRead(BIT0);
   bit_1 = digitalRead(BIT1);
   bit_2 = digitalRead(BIT2);
   bit_3 = digitalRead(BIT3);
   bit_4 = digitalRead(BIT4);
+
 
   bit = bit_0 + (bit_1 << 1) + (bit_2 << 2) + (bit_3 << 3) + (bit_4 << 4);
 
@@ -117,7 +129,8 @@ void winddirection(){
 
 
 
-// ISR
+
+// ISR für Wingeschw.
 void IRAM_ATTR ISR_WIND(){ //IRAM_ATTR führt dazu das sich die ISR im RAM befindet --> besser Perfomance
 
   float timersec = 0;
@@ -168,7 +181,7 @@ void BME280(){
 
     temperatur = bme.readTemperature() + temperatur;
     druck = (bme.readPressure() / 100.0F) + druck;
-    akku = ((analogRead(35) * 3.3 * 2 / 4096) + 0.6) + akku;
+    akku = ((analogRead(35) * 3.3 * 2 / 4096) + 0.5) + akku;
     feuchte = bme.readHumidity() + feuchte;
     delay(1000);
   }
