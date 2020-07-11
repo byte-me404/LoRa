@@ -53,7 +53,7 @@ float akku_temp;
 float feuchte_temp;
 float windgeschwindigkeit;
 float windrichtung;
-bool temp = false;
+bool temp = true;
 
 
 
@@ -145,12 +145,22 @@ void loop() {
       i++;
     }
 
+    if(temp){
+
+      temperatur = temperatur_temp;
+      druck = druck_temp;
+      feuchte = feuchte_temp;
+      akku = akku_temp;
+
+      temp = false;
+    }
+
     // Überprüfen ob Werte korrekt sind
     if(isnan(windgeschwindigkeit)) windgeschwindigkeit = 0;
-    if(temperatur_temp > (temperatur * 0.75)) temperatur = temperatur_temp;
-    if(druck_temp > (druck * 0.75)) druck = druck_temp;
-    if(feuchte_temp > (feuchte * 0.75)) feuchte= feuchte_temp;
-    if(akku_temp > (akku * 0.75)) akku = akku_temp;
+    if((temperatur_temp > (temperatur * 0.75)) && (temperatur_temp < (temperatur * 1.25))) temperatur = temperatur_temp;
+    if((druck_temp > (druck * 0.75)) && (druck_temp < (druck * 1.25))) druck = druck_temp;
+    if((feuchte_temp > (feuchte * 0.75)) && (feuchte_temp < (feuchte * 1.25))) feuchte= feuchte_temp;
+    if((akku_temp > (akku * 0.75)) && (akku_temp < (akku * 1.25))) akku = akku_temp;
 
     int rssi = LoRa.packetRssi();
     Serial.print("mit einer RSSI von: ");    
